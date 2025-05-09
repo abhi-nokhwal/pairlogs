@@ -4,6 +4,7 @@ import CoupleRegistration from './components/CoupleRegistration';
 import QuizCreation from './components/QuizCreation';
 import QuizAnswering from './components/QuizAnswering';
 import CoupleSpace from './components/CoupleSpace';
+import Login from './components/Login';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <div className="min-h-screen bg-gray-100">
         <Routes>
           <Route path="/" element={<TypingPractice />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<CoupleRegistration />} />
           <Route path="/create-quiz" element={<QuizCreation />} />
           <Route path="/join/:token" element={<TypingPractice />} />
