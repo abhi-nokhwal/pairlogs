@@ -19,7 +19,7 @@ const upload = multer({ storage });
 
 router.post("/upload", upload.single("image"), async (req, res) => {
   const { caption } = req.body;
-  const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  const imageUrl = `http://localhost:5000/api/uploads/${req.file.filename}`;
 
   try {
     const newImage = new Image({ imageUrl, caption });

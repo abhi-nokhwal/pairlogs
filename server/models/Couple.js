@@ -1,19 +1,39 @@
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require('uuid');
 
-const CoupleSchema = new mongoose.Schema({
+const coupleSchema = new mongoose.Schema({
   coupleId: {
     type: String,
     required: true,
-    unique: true,
+    unique: true
   },
-  quizAnswer: {
+  token: {
     type: String,
-    required: true,
+    default: () => uuidv4(),
+    unique: true
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  partnerOne: {
+    name: {
+      type: String,
+      required: true
+    },
+    email: {
+      type: String,
+      required: true
+    }
   },
+  partnerTwo: {
+    name: {
+      type: String,
+      required: true
+    },
+    email: {
+      type: String,
+      required: true
+    }
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model("Couple", CoupleSchema);
+module.exports = mongoose.model("Couple", coupleSchema);

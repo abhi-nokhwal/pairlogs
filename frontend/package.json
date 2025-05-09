@@ -13,8 +13,10 @@
     "@tailwindcss/vite": "^4.1.5",
     "axios": "^1.9.0",
     "react": "^19.1.0",
+    "react-audio-player": "^0.17.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^6.30.0",
+    "react-spotify-web-playback": "^0.14.7",
     "tailwindcss": "^4.1.5"
   },
   "devDependencies": {
