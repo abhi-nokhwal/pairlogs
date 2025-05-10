@@ -23,9 +23,14 @@ const CoupleRegistration = () => {
   try {
     const response = await axios.post('http://localhost:5000/api/couple/register', formData);
     const { token, coupleId } = response.data;
-    // Store token and coupleId in localStorage or state management
+    // Store token and coupleId in localStorage
     localStorage.setItem('token', token);
     localStorage.setItem('coupleId', coupleId);
+    
+    // Set the creator as partnerOne
+    localStorage.setItem('userName', formData.partnerOneName);
+    localStorage.setItem('userRole', 'partnerOne');
+    
     navigate(`/create-quiz?token=${token}`);
   } catch (error) {
     console.error('Registration failed:', error);

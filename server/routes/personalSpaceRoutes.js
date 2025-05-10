@@ -205,4 +205,154 @@ router.delete('/:coupleId/notes/:noteId', async (req, res) => {
   }
 });
 
+// Add reaction to a gallery item
+router.post('/:coupleId/gallery/:imageId/reaction', async (req, res) => {
+  try {
+    const { type, addedBy } = req.body;
+    const space = await PersonalSpace.findOne({ coupleId: req.params.coupleId });
+    
+    const image = space.gallery.id(req.params.imageId);
+    
+    if (!image) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+    
+    // Check if user already reacted
+    const existingReaction = image.reactions.find(r => r.addedBy === addedBy);
+    if (existingReaction) {
+      // Update the existing reaction
+      existingReaction.type = type;
+    } else {
+      // Add new reaction
+      image.reactions.push({ type, addedBy });
+    }
+    
+    await space.save();
+    res.status(201).json(space);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete reaction from a gallery item
+router.delete('/:coupleId/gallery/:imageId/reaction', async (req, res) => {
+  try {
+    const { reactionId } = req.body;
+    const space = await PersonalSpace.findOne({ coupleId: req.params.coupleId });
+    
+    const image = space.gallery.id(req.params.imageId);
+    
+    if (!image) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+    
+    image.reactions.id(reactionId).remove();
+    await space.save();
+    
+    res.json(space);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add reaction to a song
+router.post('/:coupleId/songs/:songId/reaction', async (req, res) => {
+  try {
+    const { type, addedBy } = req.body;
+    const space = await PersonalSpace.findOne({ coupleId: req.params.coupleId });
+    
+    const song = space.songs.id(req.params.songId);
+    
+    if (!song) {
+      return res.status(404).json({ message: 'Song not found' });
+    }
+    
+    // Check if user already reacted
+    const existingReaction = song.reactions.find(r => r.addedBy === addedBy);
+    if (existingReaction) {
+      // Update the existing reaction
+      existingReaction.type = type;
+    } else {
+      // Add new reaction
+      song.reactions.push({ type, addedBy });
+    }
+    
+    await space.save();
+    res.status(201).json(space);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete reaction from a song
+router.delete('/:coupleId/songs/:songId/reaction', async (req, res) => {
+  try {
+    const { reactionId } = req.body;
+    const space = await PersonalSpace.findOne({ coupleId: req.params.coupleId });
+    
+    const song = space.songs.id(req.params.songId);
+    
+    if (!song) {
+      return res.status(404).json({ message: 'Song not found' });
+    }
+    
+    song.reactions.id(reactionId).remove();
+    await space.save();
+    
+    res.json(space);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add reaction to a note
+router.post('/:coupleId/notes/:noteId/reaction', async (req, res) => {
+  try {
+    const { type, addedBy } = req.body;
+    const space = await PersonalSpace.findOne({ coupleId: req.params.coupleId });
+    
+    const note = space.notes.id(req.params.noteId);
+    
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+    
+    // Check if user already reacted
+    const existingReaction = note.reactions.find(r => r.addedBy === addedBy);
+    if (existingReaction) {
+      // Update the existing reaction
+      existingReaction.type = type;
+    } else {
+      // Add new reaction
+      note.reactions.push({ type, addedBy });
+    }
+    
+    await space.save();
+    res.status(201).json(space);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete reaction from a note
+router.delete('/:coupleId/notes/:noteId/reaction', async (req, res) => {
+  try {
+    const { reactionId } = req.body;
+    const space = await PersonalSpace.findOne({ coupleId: req.params.coupleId });
+    
+    const note = space.notes.id(req.params.noteId);
+    
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+    
+    note.reactions.id(reactionId).remove();
+    await space.save();
+    
+    res.json(space);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-const Notes = ({ space, onUpdate, currentUser }) => {
+const Notes = ({ space, onUpdate, currentUser, setIsUpdating }) => {
   const [newNote, setNewNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -19,6 +19,7 @@ const Notes = ({ space, onUpdate, currentUser }) => {
     
     setSubmitting(true);
     setError('');
+    setIsUpdating && setIsUpdating(true);
     
     try {
       await axios.post(`http://localhost:5000/api/personal-space/${space.coupleId}/notes`, {
@@ -32,12 +33,14 @@ const Notes = ({ space, onUpdate, currentUser }) => {
       setError('Failed to add note. Please try again.');
     } finally {
       setSubmitting(false);
+      setIsUpdating && setIsUpdating(false);
     }
   };
 
   const handleDeleteNote = async (noteId) => {
     if (window.confirm('Are you sure you want to delete this note?')) {
       setDeleting(true);
+      setIsUpdating && setIsUpdating(true);
       try {
         await axios.delete(`http://localhost:5000/api/personal-space/${space.coupleId}/notes/${noteId}`);
         onUpdate();
@@ -46,6 +49,7 @@ const Notes = ({ space, onUpdate, currentUser }) => {
         setError('Failed to delete note. Please try again.');
       } finally {
         setDeleting(false);
+        setIsUpdating && setIsUpdating(false);
       }
     }
   };
@@ -56,6 +60,7 @@ const Notes = ({ space, onUpdate, currentUser }) => {
       return;
     }
 
+    setIsUpdating && setIsUpdating(true);
     try {
       await axios.put(`http://localhost:5000/api/personal-space/${space.coupleId}/notes/${noteId}`, {
         content: editContent
@@ -66,6 +71,8 @@ const Notes = ({ space, onUpdate, currentUser }) => {
     } catch (error) {
       console.error('Failed to update note:', error);
       setError('Failed to update note. Please try again.');
+    } finally {
+      setIsUpdating && setIsUpdating(false);
     }
   };
 

@@ -82,27 +82,28 @@ const CoupleSpace = () => {
   const [partnerName, setPartnerName] = useState('');
 
   useEffect(() => {
-    // Determine who is logged in (this would come from your authentication system)
-    const coupleId = localStorage.getItem('coupleId');
-    const userName = localStorage.getItem('userName');
-    const storedUserRole = localStorage.getItem('userRole');
-    const accessMethod = localStorage.getItem('accessMethod');
-    
-    if (coupleId) {
-      setCurrentUser(coupleId);
-    }
-    
-    if (userName) {
-      setCurrentUserName(userName);
-    }
-    
-    if (storedUserRole) {
-      setUserRole(storedUserRole);
-    }
-
-    // Check if the user joined via quiz
-    if (accessMethod === 'quiz') {
-      setJoinedViaQuiz(true);
+    // Clear any stale data to prevent privacy issues
+    if (token) {
+      // Preserve important user data
+      const accessMethod = localStorage.getItem('accessMethod');
+      const userRole = localStorage.getItem('userRole');
+      const userName = localStorage.getItem('userName');
+      
+      // Only keep the token for now, clear everything else to prevent data leakage
+      const currentToken = token;
+      localStorage.clear();
+      localStorage.setItem('token', currentToken);
+      
+      // Restore preserved data
+      if (accessMethod) {
+        localStorage.setItem('accessMethod', accessMethod);
+      }
+      if (userRole) {
+        localStorage.setItem('userRole', userRole);
+      }
+      if (userName) {
+        localStorage.setItem('userName', userName);
+      }
     }
     
     fetchCoupleData();
@@ -118,53 +119,34 @@ const CoupleSpace = () => {
       
       // Save coupleId for future reference
       localStorage.setItem('coupleId', coupleId);
+      setCurrentUser(coupleId);
 
       // Determine partner's name based on current user
       const { partnerOne, partnerTwo } = coupleRes.data;
-      const storedUserRole = localStorage.getItem('userRole');
       
-      if (storedUserRole === 'partnerOne') {
-        setPartnerName(partnerTwo?.name || 'Partner');
-      } else if (storedUserRole === 'partnerTwo') {
-        setPartnerName(partnerOne?.name || 'Partner');
-      }
-
-      // Try to determine current user name if not already set
-      if (!currentUserName || currentUserName === '') {
-        // Check if we have user details stored
-        const userId = localStorage.getItem('userId');
-        const storedUserName = localStorage.getItem('userName');
-        
-        if (storedUserName) {
-          setCurrentUserName(storedUserName);
-        } else {
-          // If we don't have a stored name, see if we can determine from the couple info
-          const partnerOne = coupleRes.data.partnerOne || {};
-          const partnerTwo = coupleRes.data.partnerTwo || {};
-          
-          // If we have the userId, match it with the right partner
-          if (userId) {
-            if (partnerOne.userId === userId) {
-              setCurrentUserName(partnerOne.name);
-              localStorage.setItem('userName', partnerOne.name);
-              localStorage.setItem('userRole', 'partnerOne');
-              setPartnerName(partnerTwo?.name || 'Partner');
-            } else if (partnerTwo.userId === userId) {
-              setCurrentUserName(partnerTwo.name);
-              localStorage.setItem('userName', partnerTwo.name);
-              localStorage.setItem('userRole', 'partnerTwo');
-              setPartnerName(partnerOne?.name || 'Partner');
-            }
-          } else {
-            // If we can't determine, default to partnerOne
-            if (partnerOne.name) {
-              setCurrentUserName(partnerOne.name);
-              localStorage.setItem('userName', partnerOne.name);
-              localStorage.setItem('userRole', 'partnerOne');
-              setPartnerName(partnerTwo?.name || 'Partner');
-            }
-          }
-        }
+      // Get the current user role from localStorage
+      const currentUserRole = localStorage.getItem('userRole');
+      const joinedViaQuiz = localStorage.getItem('accessMethod') === 'quiz';
+      
+      if (currentUserRole === 'partnerOne') {
+        // Creator
+        setCurrentUserName(partnerOne.name);
+        setPartnerName(partnerTwo.name);
+        setUserRole('partnerOne');
+        setJoinedViaQuiz(false);
+      } else if (joinedViaQuiz) {
+        // Partner who joined via quiz
+        setCurrentUserName(partnerTwo.name);
+        setPartnerName(partnerOne.name);
+        setUserRole('partnerTwo');
+        setJoinedViaQuiz(true);
+      } else {
+        // Default to creator if no role is set
+        setCurrentUserName(partnerOne.name);
+        setPartnerName(partnerTwo.name);
+        setUserRole('partnerOne');
+        setJoinedViaQuiz(false);
+        localStorage.setItem('userRole', 'partnerOne');
       }
       
       // Then try to fetch the personal space
@@ -201,11 +183,10 @@ const CoupleSpace = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('coupleId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('accessMethod');
+    // Completely clear all storage to prevent privacy issues
+    localStorage.clear();
+    
+    // Redirect to home
     navigate('/');
   };
 
@@ -300,8 +281,8 @@ const CoupleSpace = () => {
                 onClick={handleLogout}
                 className="text-gray-600 hover:text-red-600 font-medium text-sm flex items-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-4-4H3zm-.879.879A3 3 0 013 3h10a.997.997 0 01.707.293l4 4a.996.996 0 01.293.707V16a3 3 0 01-3 3H3a3 3 0 01-3-3V4a3 3 0 012.121-2.121zM7 9a1 1 0 011-1h1V7a1 1 0 112 0v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H8a1 1 0 01-1-1z" clipRule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 Sign Out
               </button>
@@ -309,8 +290,8 @@ const CoupleSpace = () => {
           </div>
         )}
         
-        {/* Share link component - only show if not joined via quiz */}
-        {!joinedViaQuiz && <ShareLink token={token} />}
+        {/* Share link - only visible to the creator (partnerOne) */}
+        {userRole === 'partnerOne' && <ShareLink token={token} />}
         
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Tab navigation with heart icons */}

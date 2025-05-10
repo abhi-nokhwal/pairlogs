@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import axios from 'axios';
 
-const Songs = ({ space, onUpdate, currentUser }) => {
+const Songs = ({ space, onUpdate, currentUser, setIsUpdating }) => {
   const [songSource, setSongSource] = useState('url'); // 'url' or 'file'
   const [newSong, setNewSong] = useState({ title: '', artist: '', url: '', file: null });
   const [uploading, setUploading] = useState(false);
@@ -69,6 +69,7 @@ const Songs = ({ space, onUpdate, currentUser }) => {
       return;
     }
     
+    setIsUpdating && setIsUpdating(true);
     setUploading(true);
     setError('');
     
@@ -102,12 +103,14 @@ const Songs = ({ space, onUpdate, currentUser }) => {
       console.error('Failed to add song:', error);
       setError('Failed to add song. Please try again.');
     } finally {
+      setIsUpdating && setIsUpdating(false);
       setUploading(false);
     }
   };
 
   const handleDeleteSong = async (songId) => {
     if (window.confirm('Are you sure you want to delete this song?')) {
+      setIsUpdating && setIsUpdating(true);
       setDeleting(true);
       try {
         await axios.delete(`http://localhost:5000/api/personal-space/${space.coupleId}/songs/${songId}`);
@@ -116,6 +119,7 @@ const Songs = ({ space, onUpdate, currentUser }) => {
         console.error('Failed to delete song:', error);
         setError('Failed to delete song. Please try again.');
       } finally {
+        setIsUpdating && setIsUpdating(false);
         setDeleting(false);
       }
     }
@@ -127,6 +131,7 @@ const Songs = ({ space, onUpdate, currentUser }) => {
       return;
     }
 
+    setIsUpdating && setIsUpdating(true);
     try {
       await axios.put(`http://localhost:5000/api/personal-space/${space.coupleId}/songs/${songId}`, {
         title: editSong.title,
@@ -139,6 +144,8 @@ const Songs = ({ space, onUpdate, currentUser }) => {
     } catch (error) {
       console.error('Failed to update song:', error);
       setError('Failed to update song. Please try again.');
+    } finally {
+      setIsUpdating && setIsUpdating(false);
     }
   };
 
