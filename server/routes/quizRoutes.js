@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Quiz = require('../models/Quiz');
+const Couple = require('../models/Couple');
 
 // Create quiz
 router.post('/create', async (req, res) => {
@@ -14,20 +15,55 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// Get quiz
-router.get('/:coupleId', async (req, res) => {
+// Get quiz by couple ID
+router.get('/couple/:coupleId', async (req, res) => {
   try {
     const quiz = await Quiz.findOne({ coupleId: req.params.coupleId });
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz not found' });
+    }
     res.json(quiz);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// Submit quiz answers
-router.post('/:coupleId/submit', async (req, res) => {
+// Get quiz by token
+router.get('/:token', async (req, res) => {
   try {
-    const quiz = await Quiz.findOne({ coupleId: req.params.coupleId });
+    // First find the couple by token
+    const couple = await Couple.findOne({ token: req.params.token });
+    if (!couple) {
+      return res.status(404).json({ message: 'Couple not found' });
+    }
+    
+    // Then find the quiz by coupleId
+    const quiz = await Quiz.findOne({ coupleId: couple.coupleId });
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz not found' });
+    }
+    
+    res.json(quiz);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Submit quiz answers with token
+router.post('/:token/submit', async (req, res) => {
+  try {
+    // First find the couple by token
+    const couple = await Couple.findOne({ token: req.params.token });
+    if (!couple) {
+      return res.status(404).json({ message: 'Couple not found' });
+    }
+    
+    // Then find the quiz by coupleId
+    const quiz = await Quiz.findOne({ coupleId: couple.coupleId });
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz not found' });
+    }
+    
     const { answers } = req.body;
 
     // Check if quiz is locked
@@ -63,6 +99,7 @@ router.post('/:coupleId/submit', async (req, res) => {
       attemptsLeft: 5 - quiz.attempts.count
     });
   } catch (error) {
+    console.error('Quiz submission error:', error);
     res.status(500).json({ message: error.message });
   }
 });
